@@ -1,0 +1,14 @@
+# Sistema y editores
+Thumbs.db
+desktop.ini
+.DS_Store
+.vscode/
+.idea/
+*.swp
+
+# Secretos (contraseñas, llaves de APIs): nunca a GitHub
+.env
+.env.*
+!.env.example
+*.pem
+*.key

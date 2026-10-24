@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Manual del server · Dasodi</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Teko:wght@500;600&family=Barlow:wght@400;500;600&family=Silkscreen:wght@400;700&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="icon" href="assets/megaman-idle.png">
+</head>
+<body>
+  <div class="fx-scan" aria-hidden="true"></div>
+  <div class="fx-vignette" aria-hidden="true"></div>
+
+  <div class="wrap">
+
+    <!-- Portada: Mega Man dispara y DASODI se pulveriza -->
+    <section class="hero" aria-label="Portada">
+      <div class="stage">
+        <img id="megaman" class="megaman" src="assets/megaman-idle.png" width="270" height="90" alt="Mega Man X cargando un disparo">
+        <div id="bullet" class="shot" aria-hidden="true"></div>
+        <div id="spark" class="spark" aria-hidden="true"></div>
+        <div id="word" class="word" role="img" aria-label="DASODI"></div>
+      </div>
+      <button id="replay" class="btn replay" type="button">Repetir disparo</button>
+    </section>
+
+    <!-- HUD -->
+    <header class="panel hud">
+      <div class="hud-brand">
+        <span class="live-dot" aria-hidden="true"></span>
+        <div class="hud-titles">
+          <span class="display brand">Manual del server</span>
+          <span id="brandSub" class="sub">Comunidad de streams en Discord</span>
+        </div>
+      </div>
+      <div class="hud-xp">
+        <div class="hud-xp-row">
+          <span class="badge">Progreso</span>
+          <span id="xpText" class="xp-num">0 / 0</span>
+        </div>
+        <div class="xp-track"><div id="xpFill" class="xp-fill"></div></div>
+      </div>
+      <button id="mute" class="btn" type="button" aria-pressed="false"></button>
+    </header>
+
+    <!-- Nombre del servidor -->
+    <form class="panel server-bar" id="serverForm" autocomplete="off">
+      <label for="serverInput" class="badge">Nombre del servidor</label>
+      <input id="serverInput" class="input" type="text" maxlength="100" placeholder="Inserta el nombre del servidor">
+      <button class="btn primary" type="submit">Guardar</button>
+      <span id="serverStatus" class="server-status" role="status" aria-live="polite"></span>
+    </form>
+
+    <!-- Checklist general -->
+    <details class="panel master" id="master">
+      <summary>
+        <span class="display master-title">Checklist general</span>
+        <span id="masterCount" class="xp-num"></span>
+      </summary>
+      <div id="masterList" class="master-grid"></div>
+    </details>
+
+    <div class="layout">
+      <nav class="panel side" aria-label="Niveles">
+        <span class="badge side-label">Niveles</span>
+        <div id="levels" class="levels"></div>
+        <span class="badge side-label side-label-2">Extras</span>
+        <div id="extras" class="levels"></div>
+      </nav>
+
+      <main class="panel main" id="main">
+        <div class="main-head">
+          <div class="main-titles">
+            <span id="levelBadge" class="badge"></span>
+            <h1 id="levelTitle" class="display title"></h1>
+            <p id="levelDesc" class="desc"></p>
+          </div>
+          <button id="copy" class="btn" type="button">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+            <span id="copyText">Copiar enlace</span>
+          </button>
+        </div>
+
+        <div class="tabs" id="tabs" role="tablist" aria-label="Contenido del nivel">
+          <button class="tab" role="tab" type="button" data-tab="pasos" id="tab-pasos" aria-controls="panel">Pasos</button>
+          <button class="tab" role="tab" type="button" data-tab="check" id="tab-check" aria-controls="panel">Checklist</button>
+          <button class="tab" role="tab" type="button" data-tab="tips" id="tab-tips" aria-controls="panel">Tips</button>
+        </div>
+
+        <div id="panel" role="tabpanel" class="tabpanel"></div>
+
+        <div class="main-nav">
+          <button id="prev" class="btn" type="button">Nivel anterior</button>
+          <button id="next" class="btn primary" type="button">Siguiente nivel</button>
+        </div>
+      </main>
+    </div>
+
+    <footer class="foot">
+      <span class="badge">Hecho para la comunidad de Dasodi</span>
+    </footer>
+  </div>
+
+  <script src="content.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

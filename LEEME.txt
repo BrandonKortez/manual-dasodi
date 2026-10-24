@@ -1,0 +1,43 @@
+MANUAL DEL SERVER · DASODI
+==========================
+
+Cómo abrirlo
+- Doble clic en index.html (se abre en tu navegador).
+- Las fuentes se cargan de Google Fonts: con internet se ve con su tipografía; sin internet usa fuentes de respaldo.
+
+Archivos
+- index.html ............ estructura de la página
+- styles.css ............ estilo (Broadcast + Arcade CRT)
+- content.js ............ TODO el texto del manual (12 niveles y 6 extras)
+- app.js ................ checklist, pestañas, sonidos y animación de Mega Man
+- assets/megaman.gif .... el GIF del disparo
+- assets/megaman-idle.png  primer cuadro del GIF (Mega Man en reposo)
+
+Ajustar la animación de Mega Man
+- Abre app.js y cambia los números del bloque TIMING (están en milisegundos):
+    esperaInicial ..... reposo antes de que arranque el GIF
+    sonidoCarga ....... cuándo suena la carga (desde que arranca el GIF)
+    sonidoDisparo ..... cuándo suena el disparo
+    salidaBala ........ cuándo sale la bala por la derecha del GIF
+    balaDuracion ...... lo que tarda la bala en llegar a las letras
+    polvoDuracion ..... cuánto dura la pulverización
+    polvoEscalonado ... retraso entre letras
+    duracionGif ....... duración real de una vuelta del GIF
+    pausaRepeticion ... tiempo sin letras antes de que regresen
+    repetir ........... true = se repite, false = una sola vez
+- Guarda y recarga la página (F5).
+
+Si la bala no sale exacto de donde termina el disparo del GIF:
+- En styles.css, dentro de .shot y .spark, ajusta --shot-from (de dónde sale) y --shot-to (dónde choca).
+
+Nombre del servidor
+- Escríbelo en la barra «Nombre del servidor» y toca Guardar.
+- Se aplica en todo el manual (donde diga [nombre del servidor]) y se guarda en tu navegador.
+
+Editar o agregar contenido
+- Abre content.js. Cada paso tiene: t (título), where (dónde), what (qué hacer),
+  check (cómo comprobar), warn (aviso) y copy (texto con botón Copiar).
+- {S} se reemplaza por el nombre del servidor. **texto** = negritas, `texto` = código.
+- Al agregar o quitar pasos, el checklist se ajusta solo.
+
+El checklist, el sonido y el nombre del servidor se guardan en tu navegador.
