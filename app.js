@@ -73,23 +73,53 @@ const state = {
   index: 0,
   tab: 'pasos',
   muted: store.get('muted', false),
-  checks: store.get('checks-v2', {}),
+  progress: loadProgress(),   // { idDeTarea: 'done' | 'skip' }
   server: store.get('server', '')
 };
 
-const isOn = (i, j) => !!state.checks[i + '-' + j];
-const levelDone = (i) => LEVELS[i].steps.every((_, j) => isOn(i, j));
+/* Migración: la versión anterior guardaba «nivel-paso» por posición.
+   Este es el orden exacto de aquella versión; convierte cada palomita
+   a su identificador fijo. La copia vieja (checks-v2) no se borra. */
+function loadProgress() {
+  const saved = store.get('progress-v3', null);
+  if (saved && typeof saved === 'object') return saved;
+  const LEGACY_ORDER = [["cuentas-1", "cuentas-2", "cuentas-3"], ["crear-1", "crear-2", "crear-3", "crear-4", "crear-5"], ["comunidad-1", "comunidad-2", "comunidad-3", "comunidad-4", "comunidad-5"], ["roles-1", "roles-2", "roles-3", "roles-4", "roles-5", "roles-6", "roles-7"], ["canales-1", "canales-2", "canales-3", "canales-4", "canales-5", "canales-6", "canales-7", "canales-8"], ["onboarding-1", "onboarding-2", "onboarding-3", "onboarding-4", "onboarding-5", "onboarding-6"], ["bienvenida-1", "bienvenida-2", "bienvenida-3", "bienvenida-4", "bienvenida-5", "bienvenida-6"], ["bots-1", "bots-2", "bots-3", "bots-4", "bots-5"], ["seguridad-1", "seguridad-2", "seguridad-3", "seguridad-4", "seguridad-5"], ["botpropio-1", "botpropio-2", "botpropio-3", "botpropio-4", "botpropio-5", "botpropio-6", "botpropio-7"], ["instalar-1", "instalar-2", "instalar-3", "instalar-4", "instalar-5", "instalar-6", "instalar-7", "instalar-8"], ["fondo-1", "fondo-2", "fondo-3", "fondo-4", "fondo-5", "fondo-6", "fondo-7"]];
+  const old = store.get('checks-v2', {});
+  const p = {};
+  Object.keys(old).forEach((k) => {
+    if (!old[k]) return;
+    const [i, j] = k.split('-').map(Number);
+    const id = LEGACY_ORDER[i] && LEGACY_ORDER[i][j];
+    if (id) p[id] = 'done';
+  });
+  store.set('progress-v3', p);
+  return p;
+}
+function saveProgress() { store.set('progress-v3', state.progress); }
+
+const statusOf = (id) => state.progress[id] || 'todo';
+function levelStats(i) {
+  const st = { done: 0, skip: 0, total: LEVELS[i].steps.length };
+  LEVELS[i].steps.forEach((x) => { const v = statusOf(x.id); if (v === 'done') st.done++; else if (v === 'skip') st.skip++; });
+  st.todo = st.total - st.done - st.skip;
+  return st;
+}
+const levelDone = (i) => levelStats(i).todo === 0;
 const totals = () => {
-  let done = 0, total = 0;
-  LEVELS.forEach((l, i) => l.steps.forEach((_, j) => { total++; if (isOn(i, j)) done++; }));
-  return { done, total };
+  const t = { done: 0, skip: 0, total: 0 };
+  LEVELS.forEach((_, i) => { const st = levelStats(i); t.done += st.done; t.skip += st.skip; t.total += st.total; });
+  t.todo = t.total - t.done - t.skip;
+  return t;
 };
 
 /* Texto: reemplaza {S}, escapa HTML y aplica **negritas** y `código` */
 const serverName = () => state.server.trim() || '[nombre del servidor]';
 const sub = (txt) => String(txt).split('{S}').join(serverName());
+const TYPE_CLASS = { 'Texto': 'texto', 'Anuncios': 'anuncios', 'Foro': 'foro', 'Voz': 'voz', 'Escenario': 'escenario' };
+const typeBadge = (t) => '<span class="type type-' + TYPE_CLASS[t] + '">' + t + '</span>';
 function fmt(txt) {
   return escapeHtml(sub(txt))
+    .replace(/\{T:(Texto|Anuncios|Foro|Voz|Escenario)\}/g, (_, t) => typeBadge(t))
     .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
     .replace(/`(.+?)`/g, '<code>$1</code>');
 }
@@ -150,10 +180,11 @@ document.addEventListener('pointerover', (e) => {
    Render
    --------------------------------------------------------- */
 function renderHud() {
-  const { done, total } = totals();
-  $('#xpText').textContent = done + ' / ' + total;
-  $('#xpFill').style.width = Math.round((done / total) * 100) + '%';
-  $('#masterCount').textContent = done + ' / ' + total;
+  const t = totals();
+  const goal = t.total - t.skip;
+  $('#xpText').textContent = t.done + ' / ' + goal + (t.skip ? ' · ' + t.skip + (t.skip === 1 ? ' descartada' : ' descartadas') : '');
+  $('#xpFill').style.width = (goal ? Math.round((t.done / goal) * 100) : 100) + '%';
+  $('#masterCount').textContent = t.done + ' hechas · ' + t.skip + ' descartadas · ' + t.todo + ' pendientes';
   $('#brandSub').textContent = state.server.trim() ? state.server.trim() : 'Comunidad de streams en Discord';
   document.title = 'Manual del server · ' + serverName();
   const mute = $('#mute');
@@ -165,8 +196,9 @@ function renderHud() {
 function renderNav() {
   $('#levels').innerHTML = LEVELS.map((l, i) => {
     const active = state.view === 'level' && state.index === i;
-    const doneCount = l.steps.filter((_, j) => isOn(i, j)).length;
-    const meta = levelDone(i) ? 'Completado' : (active ? 'En curso · ' : '') + doneCount + ' de ' + l.steps.length;
+    const st = levelStats(i);
+    const meta = levelDone(i) ? 'Completado' + (st.skip ? ' · ' + st.skip + ' descartada' + (st.skip > 1 ? 's' : '') : '')
+      : (active ? 'En curso · ' : '') + st.done + ' de ' + (st.total - st.skip) + (st.skip ? ' · ' + st.skip + ' desc.' : '');
     const cls = 'lvl' + (active ? ' is-active' : '') + (levelDone(i) ? ' is-done' : '');
     return '<button type="button" class="' + cls + '" data-level="' + i + '"' + (active ? ' aria-current="page"' : '') + '>' +
       '<span class="num">' + pad(i + 1) + '</span>' +
@@ -180,23 +212,53 @@ function renderNav() {
   }).join('');
 }
 
-function checkButton(i, j, text) {
-  return '<button type="button" class="check" role="checkbox" aria-checked="' + isOn(i, j) + '" data-check="' + i + '-' + j + '">' +
-    '<span class="box">' + CHECK_SVG + '</span><span class="lbl">' + fmt(text) + '</span></button>';
+function taskRow(step) {
+  const v = statusOf(step.id);
+  return '<div class="task is-' + v + '">' +
+    '<button type="button" class="check" role="checkbox" aria-checked="' + (v === 'done') + '" data-done="' + step.id + '">' +
+    '<span class="box">' + CHECK_SVG + '</span><span class="lbl">' + fmt(step.t) + '</span>' +
+    (v === 'skip' ? '<span class="skip-tag">Descartado</span>' : '') + '</button>' +
+    '<button type="button" class="skip-btn" aria-pressed="' + (v === 'skip') + '" data-skip="' + step.id + '">' +
+    (v === 'skip' ? 'Recuperar' : 'Descartar') + '</button></div>';
 }
 
 function renderMaster() {
   $('#masterList').innerHTML = LEVELS.map((l, i) =>
     '<div class="master-group"><h3>' + pad(i + 1) + ' · ' + escapeHtml(l.title) + '</h3>' +
-    '<div class="tabpanel">' + l.steps.map((s, j) => checkButton(i, j, s.t)).join('') + '</div></div>'
+    '<div class="tabpanel">' + l.steps.map(taskRow).join('') + '</div></div>'
   ).join('');
 }
 
 function tableHtml(tb) {
+  const typeCol = tb.head.indexOf('Tipo');
   return '<div class="table-wrap"><table class="tbl"><thead><tr>' +
     tb.head.map((h) => '<th scope="col">' + fmt(h) + '</th>').join('') + '</tr></thead><tbody>' +
-    tb.rows.map((r) => '<tr>' + r.map((c) => '<td>' + fmt(c) + '</td>').join('') + '</tr>').join('') +
+    tb.rows.map((r) => '<tr>' + r.map((c, k) =>
+      '<td>' + (k === typeCol && TYPE_CLASS[c] ? typeBadge(c) : fmt(c)) + '</td>').join('') + '</tr>').join('') +
     '</tbody></table></div>';
+}
+
+function summaryHtml() {
+  const t = totals();
+  let h = '<div class="sum-stats">' +
+    '<div class="sum-stat sum-done"><span class="sum-n">' + t.done + '</span><span>Hechas</span></div>' +
+    '<div class="sum-stat sum-skip"><span class="sum-n">' + t.skip + '</span><span>Descartadas</span></div>' +
+    '<div class="sum-stat sum-todo"><span class="sum-n">' + t.todo + '</span><span>Pendientes</span></div></div>';
+  let plain = 'RESUMEN DE AVANCE · ' + serverName() + '\nHechas: ' + t.done + ' · Descartadas: ' + t.skip + ' · Pendientes: ' + t.todo + '\n';
+  LEVELS.forEach((l, i) => {
+    const groups = { done: [], skip: [], todo: [] };
+    l.steps.forEach((x) => groups[statusOf(x.id)].push(x));
+    plain += '\n' + pad(i + 1) + ' · ' + sub(l.title) + '\n';
+    h += '<section class="sum-level"><h3 class="step-title">' + pad(i + 1) + ' · ' + escapeHtml(l.title) + '</h3>';
+    [['done', 'Hecho', '✔'], ['skip', 'Descartado', '✕'], ['todo', 'Pendiente', '·']].forEach(([k, label, mark]) => {
+      if (!groups[k].length) return;
+      h += '<div class="sum-group sum-' + k + '"><span class="tag">' + label + '</span><ul>' +
+        groups[k].map((x) => '<li>' + fmt(x.t) + '</li>').join('') + '</ul></div>';
+      groups[k].forEach((x) => { plain += '  ' + mark + ' ' + sub(x.t).replace(/\*\*|`/g, '') + (k === 'skip' ? ' (descartado)' : '') + '\n'; });
+    });
+    h += '</section>';
+  });
+  return '<div class="row-copy">' + copyButton(plain) + '<span class="intro">Copia el resumen como texto para compartirlo.</span></div>' + h;
 }
 
 function stepHtml(st, j) {
@@ -225,7 +287,9 @@ function renderMain(animate) {
     panel.removeAttribute('aria-labelledby');
     panel.setAttribute('role', 'region');
     panel.setAttribute('aria-label', x.title);
-    html = '<div class="cards">' + x.items.map((it) => {
+    if (x.summary) {
+      html = summaryHtml();
+    } else html = '<div class="cards">' + x.items.map((it) => {
       let c = '<article class="card"><h3 class="step-title">' + fmt(it.q) + '</h3><p>' + fmt(it.a) + '</p>';
       if (it.copy) c += '<pre class="copy-block">' + escapeHtml(sub(it.copy)) + '</pre><div>' + copyButton(it.copy) + '</div>';
       if (it.link) c += '<a class="btn btn-sm" href="' + escapeHtml(it.link) + '" target="_blank" rel="noopener noreferrer">Abrir ' + escapeHtml(it.link.replace(/^https?:\/\//, '')) + '</a>';
@@ -256,8 +320,8 @@ function renderMain(animate) {
       if (l.table) html += tableHtml(l.table);
       html += '<ol class="steps">' + l.steps.map(stepHtml).join('') + '</ol>';
     } else if (state.tab === 'check') {
-      html = '<p class="intro">Marca cada tarea cuando la termines. Se guarda en este navegador.</p>' +
-        l.steps.map((s, j) => checkButton(i, j, s.t)).join('') +
+      html = '<p class="intro">Marca cada tarea cuando la termines. Si decidieron no aplicarla, toca **Descartar**: deja de contar como pendiente y aparece en el Resumen.</p>'.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>') +
+        l.steps.map(taskRow).join('') +
         (levelDone(i) ? '<div class="levelup">Stage clear</div>' : '');
     } else {
       html = (l.tips || []).map((t) => '<div class="tipcard"><span class="badge">Tip</span><p>' + fmt(t) + '</p></div>').join('');
@@ -297,16 +361,23 @@ function go(view, idx, opts) {
   renderMain(true);
 }
 
-function toggleCheck(key) {
-  const i = Number(key.split('-')[0]);
+const levelOfStep = (id) => LEVELS.findIndex((l) => l.steps.some((x) => x.id === id));
+
+function setStatus(id, value) {
+  const i = levelOfStep(id);
   const wasDone = levelDone(i);
-  state.checks[key] = !state.checks[key];
-  store.set('checks-v2', state.checks);
+  if (value === 'todo') delete state.progress[id]; else state.progress[id] = value;
+  saveProgress();
   snd(!wasDone && levelDone(i) ? 'win' : 'click');
+  refreshProgressViews(i);
+}
+
+function refreshProgressViews(i) {
   renderHud();
   renderNav();
   renderMaster();
-  if (state.view === 'level' && i === state.index && state.tab === 'check') renderMain(false);
+  const onSummary = state.view === 'extra' && EXTRAS[state.index].summary;
+  if (onSummary || (state.view === 'level' && i === state.index && state.tab === 'check')) renderMain(false);
 }
 
 async function copyText(text, btn) {
@@ -332,8 +403,11 @@ document.addEventListener('click', (e) => {
   const ext = e.target.closest('[data-extra]');
   if (ext) { snd('click'); go('extra', Number(ext.dataset.extra)); $('#main').scrollIntoView({ block: 'start' }); return; }
 
-  const chk = e.target.closest('[data-check]');
-  if (chk) { toggleCheck(chk.dataset.check); return; }
+  const dn = e.target.closest('[data-done]');
+  if (dn) { const id = dn.dataset.done; setStatus(id, statusOf(id) === 'done' ? 'todo' : 'done'); return; }
+
+  const sk = e.target.closest('[data-skip]');
+  if (sk) { const id = sk.dataset.skip; setStatus(id, statusOf(id) === 'skip' ? 'todo' : 'skip'); return; }
 
   const tab = e.target.closest('[data-tab]');
   if (tab) { snd('click'); state.tab = tab.dataset.tab; renderMain(true); return; }
@@ -378,6 +452,54 @@ $('#copy').addEventListener('click', () => {
 });
 
 $('#master').addEventListener('toggle', () => snd('click'));
+
+$('#exportBtn').addEventListener('click', () => {
+  snd('click');
+  const data = { app: 'manual-dasodi', version: 3, exportado: new Date().toISOString(), server: state.server, progress: state.progress };
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'progreso-manual-' + new Date().toISOString().slice(0, 10) + '.json';
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  progressMsg('Progreso exportado. Guarda el archivo: con él lo recuperas en otra PC o navegador.');
+});
+
+$('#importBtn').addEventListener('click', () => { snd('click'); $('#importFile').click(); });
+$('#importFile').addEventListener('change', async (e) => {
+  const file = e.target.files[0];
+  e.target.value = '';
+  if (!file) return;
+  try {
+    const data = JSON.parse(await file.text());
+    if (!data || data.app !== 'manual-dasodi' || typeof data.progress !== 'object') throw new Error('formato');
+    const n = Object.keys(data.progress).length;
+    if (!confirm('Esto reemplaza el progreso actual por el del archivo (' + n + ' tareas marcadas). ¿Continuar?')) return;
+    const valid = {};
+    Object.keys(data.progress).forEach((id) => { if (data.progress[id] === 'done' || data.progress[id] === 'skip') valid[id] = data.progress[id]; });
+    state.progress = valid;
+    saveProgress();
+    if (typeof data.server === 'string') { state.server = data.server; store.set('server', state.server); $('#serverInput').value = state.server; }
+    renderAll(false);
+    progressMsg('Progreso importado: ' + n + ' tareas.');
+  } catch (err) {
+    progressMsg('Ese archivo no es un progreso válido del manual.');
+  }
+});
+
+$('#resetBtn').addEventListener('click', () => {
+  snd('click');
+  if (!confirm('¿Borrar todas las palomitas y descartes? Exporta antes si quieres conservarlos.')) return;
+  state.progress = {};
+  saveProgress();
+  renderAll(false);
+  progressMsg('Progreso reiniciado.');
+});
+
+function progressMsg(text) {
+  $('#progressStatus').textContent = text;
+  setTimeout(() => { $('#progressStatus').textContent = ''; }, 5000);
+}
 
 function readHash() {
   const m = location.hash.match(/^#(nivel|extra)-(\d+)$/);

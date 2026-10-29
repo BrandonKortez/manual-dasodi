@@ -560,6 +560,93 @@ strong { color: #fff; font-weight: 600; }
   .step-title { font-size: 22px; }
 }
 
+
+/* ---------- tipos de canal (color fijo por tipo) ---------- */
+.type {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 9px 2px 7px;
+  border: 1px solid currentColor;
+  font-family: var(--font-pixel);
+  font-size: 11px;
+  line-height: 1.5;
+  letter-spacing: .03em;
+  white-space: nowrap;
+  vertical-align: 1px;
+}
+.type::before { content: ""; width: 7px; height: 7px; background: currentColor; flex: none; }
+.type-texto { color: var(--ice); background: rgba(90,200,250,.10); }
+.type-anuncios { color: var(--gold); background: rgba(255,176,32,.10); }
+.type-foro { color: var(--pink); background: rgba(255,79,163,.10); }
+.type-voz { color: var(--buster); background: rgba(157,255,92,.10); }
+.type-escenario { color: #B98CFF; background: rgba(185,140,255,.10); }
+
+/* ---------- tareas con tres estados ---------- */
+.task { display: flex; gap: 8px; align-items: stretch; }
+.task .check { flex: 1; }
+.skip-btn {
+  flex: none;
+  min-width: 96px;
+  padding: 0 12px;
+  border: 2px dashed var(--line);
+  background: transparent;
+  color: var(--muted);
+  font-family: var(--font-pixel);
+  font-size: 11px;
+  cursor: pointer;
+  transition: color .15s, border-color .15s, background .15s;
+}
+.skip-btn:hover { color: var(--pink); border-color: var(--pink); }
+.task.is-skip .check { opacity: .55; border-style: dashed; }
+.task.is-skip .lbl { text-decoration: line-through; color: var(--dim); }
+.task.is-skip .skip-btn { color: var(--yellow); border-color: var(--yellow); border-style: solid; }
+.skip-tag {
+  margin-left: auto;
+  flex: none;
+  font-family: var(--font-pixel);
+  font-size: 10px;
+  color: var(--pink);
+  border: 1px solid var(--pink);
+  padding: 2px 6px;
+}
+.master-group .skip-btn { min-width: 84px; font-size: 10px; }
+
+/* ---------- herramientas de progreso ---------- */
+.progress-tools { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; padding: 0 22px 18px; }
+.btn-danger:hover { background: var(--live); border-color: var(--live); color: #fff; }
+
+/* ---------- resumen ---------- */
+.sum-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; }
+.sum-stat {
+  display: flex; flex-direction: column; gap: 2px;
+  padding: 14px 16px;
+  background: var(--panel-2);
+  border-left: 4px solid currentColor;
+  box-shadow: var(--hard);
+  font-family: var(--font-display);
+  font-size: 20px;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+}
+.sum-n { font-family: var(--font-pixel); font-size: 34px; line-height: 1; }
+.sum-done { color: var(--buster); }
+.sum-skip { color: var(--pink); }
+.sum-todo { color: var(--ice); }
+.sum-level { display: flex; flex-direction: column; gap: 8px; padding: 14px 0; border-top: 1px dashed var(--line); }
+.sum-group { display: grid; grid-template-columns: 110px 1fr; gap: 10px; align-items: start; }
+.sum-group ul { margin: 0; padding-left: 18px; color: #D3D8E3; line-height: 1.6; }
+.sum-done .tag, .sum-group.sum-done .tag { color: var(--buster); }
+.sum-group.sum-skip .tag { color: var(--pink); }
+.sum-group.sum-skip li { text-decoration: line-through; color: var(--dim); }
+.sum-group.sum-todo .tag { color: var(--ice); }
+
+@media (max-width: 600px) {
+  .task { flex-direction: column; }
+  .skip-btn { min-height: 36px; }
+  .sum-group { grid-template-columns: 1fr; gap: 4px; }
+}
+
 /* ---------- responsive ---------- */
 @media (max-width: 1100px) {
   .megaman { width: 405px; height: 135px; }       /* × 1.5 */

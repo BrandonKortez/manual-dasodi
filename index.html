@@ -60,6 +60,13 @@
         <span class="display master-title">Checklist general</span>
         <span id="masterCount" class="xp-num"></span>
       </summary>
+      <div class="progress-tools">
+        <button id="exportBtn" class="btn btn-sm" type="button">Exportar progreso</button>
+        <button id="importBtn" class="btn btn-sm" type="button">Importar progreso</button>
+        <button id="resetBtn" class="btn btn-sm btn-danger" type="button">Reiniciar</button>
+        <input id="importFile" type="file" accept=".json,application/json" hidden>
+        <span id="progressStatus" class="server-status" role="status" aria-live="polite"></span>
+      </div>
       <div id="masterList" class="master-grid"></div>
     </details>
 
@@ -100,7 +107,7 @@
     </div>
 
     <footer class="foot">
-      <span class="badge">Hecho para la comunidad de Dasodi</span>
+      <span class="badge">Hecho para la comunidad de Dasodi · Revisado: octubre 2026</span>
     </footer>
   </div>
 
