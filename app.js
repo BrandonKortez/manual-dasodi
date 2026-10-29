@@ -121,7 +121,8 @@ function fmt(txt) {
   return escapeHtml(sub(txt))
     .replace(/\{T:(Texto|Anuncios|Foro|Voz|Escenario)\}/g, (_, t) => typeBadge(t))
     .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-    .replace(/`(.+?)`/g, '<code>$1</code>');
+    .replace(/`(.+?)`/g, '<code>$1</code>')
+    .replace(/\n/g, '<br>');
 }
 
 /* Textos para los botones Copiar */
