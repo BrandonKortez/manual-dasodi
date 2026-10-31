@@ -1,0 +1,36 @@
+VISTA DISCORD DEL MANUAL (Fases 1 y 2)
+=================================
+
+Qué es
+- La misma información del manual, con la apariencia de Discord y tu tema Cyberpunk Neon.
+- Cada canal, rol y bot se ve con su estado:
+    rojo (tachado) ........ por borrar
+    ámbar ................. pendiente por crear o arreglar
+    color normal + bolita verde ... listo (solo cuando tú lo confirmas con el botón)
+- Al borrar algo y tocar «Ya lo borré», pasa a la sección plegable «Borrados».
+
+Cómo abrirla
+- Doble clic en discord/index.html (o desde el manual clásico, en la misma carpeta del repo).
+- El ícono de libro, arriba a la izquierda, regresa al manual clásico.
+
+Qué comparte con el manual clásico
+- content.js, el avance de tareas, el nombre del servidor y el sonido.
+- Lo que palomees en una vista aparece en la otra (mismo navegador).
+
+Archivos
+- index.html ...... estructura
+- discord.css ..... diseño (layout de Discord + tu tema de Vencord)
+- perms.js ........ catálogo de permisos de Discord (nombres técnicos reales, revisado octubre 2026)
+- server-map.js ... el mapa del server: canales, roles, bots, pasos y sus permisos (SERVER_PERMS)
+- discord.js ...... lógica
+
+Agregar o quitar un canal
+- Edita server-map.js. Cada canal tiene id (no lo cambies después), name, type, state inicial,
+  topic, steps (pasos propios) y tasks (ids de tareas de content.js).
+
+Permisos (Fase 2)
+- «Editar canal» abre una ventana como la de Discord: Vista general, Permisos (✕ / ／ / ✓ por rol y bot)
+  y, en el canal de música, Comandos de bots.
+- «Editar rol» y «Permisos del bot» muestran los permisos del rol en todo el server.
+- Cada permiso trae su nombre técnico (VIEW_CHANNEL, SEND_MESSAGES…). Los marcados con ≈ son nombres
+  en español que no confirmé en tus pantallas: si en tu Discord se llaman distinto, guíate por la descripción.

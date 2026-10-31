@@ -130,7 +130,7 @@ window.MANUAL = {
       steps: [
         { id: 'roles-1', t: 'Crea el rol Administradores',
           where: 'Roles › **Crear rol** › pestaña **Mostrar**, luego pestaña **Permisos**.',
-          what: 'Nombre `Administradores`, color azul, enciende **Mostrar a los miembros del rol por separado**. En Permisos enciende solo: **Gestionar mensajes**, **Expulsar miembros**, **Banear miembros**, **Aislar temporalmente a miembros**, **Mover miembros**, **Silenciar miembros**, **Ensordecer miembros** y **Ver registro de auditoría**.',
+          what: 'Nombre `Administradores`, color azul, enciende **Mostrar a los miembros del rol por separado**. En Permisos enciende solo: **Gestionar mensajes**, **Expulsar miembros**, **Banear miembros**, **Aislar temporalmente a miembros**, **Mover miembros**, **Silenciar miembros**, **Ensordecer miembros**, **Ver registro de auditoría**, **Fijar mensajes** y **Omitir modo lento**.',
           check: 'Administrador, Gestionar servidor y Gestionar roles quedan apagados.',
           warn: 'El rol se llama **Administradores**, pero **no** lleva el permiso de Discord llamado **Administrador**. Ese permiso da control total, incluso borrar el server; nadie más que el owner debe tenerlo.' },
         { id: 'roles-2', t: 'Crea el rol EN VIVO',
@@ -139,8 +139,8 @@ window.MANUAL = {
           check: 'El rol no tiene ningún permiso encendido.' },
         { id: 'roles-3', t: 'Crea el rol Streamer',
           where: 'Roles › **Crear rol**.',
-          what: 'Nombre `Streamer`, color morado, **sin** mostrar por separado. En Permisos: **Borrar permisos** y luego enciende **Mover miembros**, **Silenciar miembros**, **Gestionar mensajes** y **Prioridad de palabra**.',
-          check: 'Solo esos cuatro permisos (más los básicos) quedan encendidos.',
+          what: 'Nombre `Streamer`, color morado, **sin** mostrar por separado. En Permisos: **Borrar permisos** y luego enciende **Mover miembros**, **Silenciar miembros**, **Gestionar mensajes**, **Prioridad de palabra**, **Fijar mensajes** y **Omitir modo lento**.',
+          check: 'Solo esos seis permisos (más los básicos) quedan encendidos.',
           warn: 'No se muestra separado a propósito: si lo estuviera, taparía el grupo EN VIVO mientras transmite.' },
         { id: 'roles-4', t: 'Crea el rol Alertas',
           where: 'Roles › **Crear rol**.',
@@ -163,7 +163,8 @@ window.MANUAL = {
       ],
       tips: [
         'EN VIVO va arriba de Streamer para que, mientras transmite, el streamer aparezca hasta arriba de la lista con el nombre en rojo. Al terminar, vuelve solo a su lugar.',
-        'Si un bot dice que no tiene permiso para un rol, casi siempre es el orden: su rol debe estar arriba del rol que intenta manejar.'
+        'Si un bot dice que no tiene permiso para un rol, casi siempre es el orden: su rol debe estar arriba del rol que intenta manejar.',
+        'Desde febrero de 2026, **Fijar mensajes** y **Omitir modo lento** son permisos aparte: **Gestionar mensajes** ya no los incluye.'
       ]
     },
 
@@ -215,8 +216,9 @@ window.MANUAL = {
           warn: 'Para meter a alguien: arrastra su nombre desde Sala de espera al canal en vivo, o clic derecho en su nombre › **Mover a**. Para sacarlo: clic derecho › **Desconectar**.' },
         { id: 'canales-6', t: 'Modo lento en #chat-en-vivo',
           where: 'Editar canal › **Información general** › **Modo lento**.',
-          what: 'Ponlo en **10 segundos**. Streamer y Administradores no se ven afectados.',
-          check: 'Al escribir con una cuenta normal aparece la cuenta regresiva.' },
+          what: 'Ponlo en **10 segundos**.',
+          check: 'Al escribir con una cuenta normal aparece la cuenta regresiva.',
+          warn: 'Desde el 23 de febrero de 2026, solo se salta el modo lento quien tenga el permiso **Omitir modo lento** (`BYPASS_SLOWMODE`); **Gestionar mensajes** ya no basta. Por eso los roles Streamer y Administradores lo llevan encendido.' },
         { id: 'canales-7', t: 'Categoría Staff privada',
           where: 'Clic derecho en la categoría Staff › **Editar categoría** › **Permisos**.',
           what: '@everyone con **Ver canal** en rojo. Agrega **Administradores** con **Ver canal** en verde. Los canales de dentro lo heredan.',
