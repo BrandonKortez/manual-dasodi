@@ -1,5 +1,5 @@
 /* =========================================================
-   Vista Discord del manual — lógica (Fase 1)
+   Vista Discord del manual — lógica (Fases 1, 2 y 3)
    Comparte con el manual clásico: content.js, el avance de tareas
    (progress-v3), el nombre del servidor y el sonido.
    ========================================================= */
@@ -7,6 +7,8 @@
 
 const LEVELS = window.MANUAL.levels;
 const MAP = window.SERVER_MAP;
+const PAGES = (window.SERVER_PAGES && window.SERVER_PAGES.pages) || {};
+const SETTINGS = (window.SERVER_PAGES && window.SERVER_PAGES.settings) || [];
 
 /* ---------- utilidades ---------- */
 const $ = (s) => document.querySelector(s);
@@ -64,6 +66,9 @@ const ORDER = [];
 MAP.categories.forEach((c) => c.channels.forEach((ch) => { EL[ch.id] = Object.assign({ kind: 'channel', category: c.name }, ch); ORDER.push(ch.id); }));
 MAP.roles.forEach((r) => { EL[r.id] = Object.assign({ kind: 'role' }, r); ORDER.push(r.id); });
 MAP.bots.forEach((b) => { EL[b.id] = Object.assign({ kind: 'bot' }, b); ORDER.push(b.id); });
+// Páginas de arriba (Eventos, Explorar canales…): no tienen estado ni cuentan en la leyenda
+Object.keys(PAGES).forEach((id) => { EL[id] = Object.assign({ kind: 'page', id: id }, PAGES[id]); });
+const TOP_ENTRIES = ['p-eventos', 'p-explorar', 'p-miembros', 'p-mejoras'].filter((id) => EL[id]);
 
 let elState = store.get('elements-v1', {});
 const stateOf = (id) => elState[id] || EL[id].state || 'pending';
@@ -88,9 +93,21 @@ const ICONS = {
   chevron: '<svg viewBox="0 0 24 24" width="12" height="12" aria-hidden="true"><path fill="currentColor" d="M5.3 9.3a1 1 0 0 1 1.4 0L12 14.6l5.3-5.3a1 1 0 1 1 1.4 1.4l-6 6a1 1 0 0 1-1.4 0l-6-6a1 1 0 0 1 0-1.4Z"/></svg>',
   check: '<svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" d="M20 6 9 17l-5-5"/></svg>',
   headphones: '<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M12 3a9 9 0 0 0-9 9v6a3 3 0 0 0 3 3h1a2 2 0 0 0 2-2v-4a2 2 0 0 0-2-2H5a7 7 0 0 1 14 0h-2a2 2 0 0 0-2 2v4a2 2 0 0 0 2 2h1a3 3 0 0 0 3-3v-6a9 9 0 0 0-9-9Z"/></svg>',
+  calendar: '<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M8 2a1 1 0 0 1 1 1v1h6V3a1 1 0 1 1 2 0v1h1a3 3 0 0 1 3 3v11a3 3 0 0 1-3 3H6a3 3 0 0 1-3-3V7a3 3 0 0 1 3-3h1V3a1 1 0 0 1 1-1ZM5 10v8a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-8H5Zm2 2h4v4H7v-4Z"/></svg>',
+  browse: '<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M4 4h7v7H4V4Zm9 0h7v7h-7V4ZM4 13h7v7H4v-7Zm12.5 0a3.5 3.5 0 0 1 2.9 5.5l1.8 1.8-1.4 1.4-1.8-1.8a3.5 3.5 0 1 1-1.5-6.9Zm0 2a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3Z"/></svg>',
+  members: '<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M14.5 8a3 3 0 1 0-6 0 3 3 0 0 0 6 0Zm-9 11c0-3 2.7-5.5 6-5.5s6 2.5 6 5.5H5.5Zm12-11.5a2.5 2.5 0 1 1 0 5 2.5 2.5 0 0 1 0-5Zm1 7c2 .6 3.5 2.3 3.5 4.5h-3.2c-.2-1.8-1-3.3-2.2-4.4l1.9-.1Z"/></svg>',
+  boost: '<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M12 2 4 7v10l8 5 8-5V7l-8-5Zm0 4.3 4.5 2.8v5.8L12 17.7l-4.5-2.8V9.1L12 6.3Z"/></svg>',
+  chart: '<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M4 3a1 1 0 0 1 1 1v15h15a1 1 0 1 1 0 2H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1Zm4 9h2v5H8v-5Zm4-4h2v9h-2V8Zm4 2h2v7h-2v-7Z"/></svg>',
+  pencil: '<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M15.6 3.6a2 2 0 0 1 2.8 0l2 2a2 2 0 0 1 0 2.8L9 19.8 3 21l1.2-6L15.6 3.6ZM6 15.8l-.5 2.7 2.7-.5 9.4-9.4-2.2-2.2L6 15.8Z"/></svg>',
+  download: '<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M12 3a1 1 0 0 1 1 1v9.6l3.3-3.3a1 1 0 1 1 1.4 1.4l-5 5a1 1 0 0 1-1.4 0l-5-5a1 1 0 1 1 1.4-1.4l3.3 3.3V4a1 1 0 0 1 1-1ZM4 19h16v2H4v-2Z"/></svg>',
+  upload: '<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M12 3a1 1 0 0 1 .7.3l5 5a1 1 0 1 1-1.4 1.4L13 6.4V16a1 1 0 1 1-2 0V6.4L7.7 9.7a1 1 0 0 1-1.4-1.4l5-5A1 1 0 0 1 12 3ZM4 19h16v2H4v-2Z"/></svg>',
+  reset: '<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M12 4a8 8 0 1 1-7.7 10.1 1 1 0 0 1 1.9-.6A6 6 0 1 0 7.8 7.8H10a1 1 0 0 1 0 2H5a1 1 0 0 1-1-1V4a1 1 0 0 1 2 0v2.3A8 8 0 0 1 12 4Z"/></svg>',
+  book: '<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M4 5a2 2 0 0 1 2-2h11a1 1 0 0 1 1 1v13H6a1 1 0 0 0 0 2h12v1a1 1 0 0 1-1 1H6a2 2 0 0 1-2-2V5Zm4 1v2h7V6H8Z"/></svg>',
+  copy: '<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path fill="currentColor" d="M8 3h10a2 2 0 0 1 2 2v10h-2V5H8V3ZM4 8a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8Z"/></svg>',
+  back: '<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M14.7 5.3a1 1 0 0 1 0 1.4L9.4 12l5.3 5.3a1 1 0 0 1-1.4 1.4l-6-6a1 1 0 0 1 0-1.4l6-6a1 1 0 0 1 1.4 0Z"/></svg>',
   headphonesOff: '<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M12 3a9 9 0 0 0-9 9v6a3 3 0 0 0 3 3h1a2 2 0 0 0 2-2v-4a2 2 0 0 0-2-2H5a7 7 0 0 1 14 0h-2a2 2 0 0 0-2 2v4a2 2 0 0 0 2 2h1a3 3 0 0 0 3-3v-6a9 9 0 0 0-9-9Z"/><path stroke="currentColor" stroke-width="2.4" stroke-linecap="round" d="M3 3l18 18"/></svg>'
 };
-const iconFor = (el) => el.kind === 'role' ? ICONS.rol : el.kind === 'bot' ? ICONS.bot : ICONS[el.type] || ICONS.texto;
+const iconFor = (el) => el.kind === 'page' ? ICONS[el.icon] : el.kind === 'role' ? ICONS.rol : el.kind === 'bot' ? ICONS.bot : ICONS[el.type] || ICONS.texto;
 const TYPE_NAME = { texto: 'Texto', anuncios: 'Anuncios', foro: 'Foro', voz: 'Voz', reglas: 'Texto' };
 
 const STATE_LABEL = { pending: 'Pendiente', delete: 'Por borrar', done: 'Listo', deleted: 'Borrado' };
@@ -128,7 +145,7 @@ function snd(kind) {
 document.addEventListener('pointerdown', wakeAudio, { passive: true });
 let lastHover = 0;
 document.addEventListener('pointerover', (e) => {
-  const el = e.target.closest('.ch, .mem, .btn, .cat');
+  const el = e.target.closest('.ch, .mem, .btn, .cat, .top-entry, .menu-item, .set-tab');
   if (!el || el.contains(e.relatedTarget)) return;
   const t = performance.now();
   if (t - lastHover < 70) return;
@@ -166,8 +183,17 @@ function channelRow(el) {
     '<span class="ch-icon">' + iconFor(el) + '</span><span class="ch-name">' + esc(el.name) + '</span>' + badge + '</button>';
 }
 
+function topEntriesHtml() {
+  if (!TOP_ENTRIES.length) return '';
+  return '<div class="top-entries">' + TOP_ENTRIES.map((id) => {
+    const el = EL[id];
+    return '<button type="button" class="ch top-entry' + (current === id ? ' is-active' : '') + '" data-el="' + id + '"' + (current === id ? ' aria-current="page"' : '') + '>' +
+      '<span class="ch-icon">' + ICONS[el.icon] + '</span><span class="ch-name">' + esc(el.name) + '</span></button>';
+  }).join('') + '</div>';
+}
+
 function renderChannels() {
-  let h = '';
+  let h = topEntriesHtml();
   MAP.categories.forEach((c, ci) => {
     const visible = c.channels.filter((ch) => stateOf(ch.id) !== 'deleted');
     if (!visible.length) return;
@@ -263,6 +289,7 @@ function actionsHtml(el, st) {
 }
 
 function renderMain() {
+  if (EL[current].kind === 'page') { renderPage(EL[current]); return; }
   const el = EL[current];
   const st = stateOf(el.id);
   const isCh = el.kind === 'channel';
@@ -456,6 +483,7 @@ function closeModal() {
 }
 
 function renderModal() {
+  if (modalState.kind === 'settings') { renderSettings(); return; }
   const el = EL[modalState.id];
   const isCh = el.kind === 'channel';
   const own = isCh ? (SP.channels[el.id] || {}) : null;
@@ -558,17 +586,363 @@ document.addEventListener('click', (e) => {
   if (t) { snd('click'); modalState.tab = t.dataset.mtab; renderModal(); return; }
   const tg = e.target.closest('[data-target]');
   if (tg) { snd('click'); modalState.target = tg.dataset.target; renderModal(); return; }
+  const sc = e.target.closest('[data-sec]');
+  if (sc) { snd('click'); modalState.sec = sc.dataset.sec; modalState.body = true; renderModal(); const b = $('#modal .set-body'); if (b) b.scrollTop = 0; return; }
+  if (e.target.closest('[data-back]')) { snd('click'); modalState.body = false; renderModal(); return; }
+  const tk = e.target.closest('[data-task]');
+  if (tk) { const id = tk.dataset.task; setTask(id, taskStatus(id) === 'done' ? 'todo' : 'done'); snd('click'); renderModal(); renderMain(); return; }
+  const sk = e.target.closest('[data-skip]');
+  if (sk) { const id = sk.dataset.skip; setTask(id, taskStatus(id) === 'skip' ? 'todo' : 'skip'); snd('click'); renderModal(); renderMain(); return; }
+  const go1 = e.target.closest('[data-el]');
+  if (go1) { snd('click'); const id = go1.dataset.el; closeModal(); go(id); return; }
 });
 document.addEventListener('change', (e) => {
   if (modalState && e.target.matches('[data-showall]')) { modalState.all = e.target.checked; renderModal(); }
 });
 document.addEventListener('keydown', (e) => {
-  if (modalState && e.key === 'Escape') closeModal();
+  if (e.key !== 'Escape') return;
+  if (modalState) { closeModal(); return; }
+  if (menuOpen()) { closeMenu(true); return; }
+  const app = document.querySelector('.app');
+  if (app.classList.contains('show-channels') || app.classList.contains('show-members')) app.classList.remove('show-channels', 'show-members');
 });
+
+/* ---------- páginas del server (Fase 3) ---------- */
+const STATE_ORDER = ['delete', 'pending', 'done', 'deleted'];
+
+function stateRow(id) {
+  const el = EL[id];
+  const st = stateOf(id);
+  const color = el.kind === 'role' ? ' style="color:' + el.color + '"' : '';
+  return '<button type="button" class="list-row st-' + st + '" data-el="' + id + '">' +
+    '<span class="ch-icon">' + iconFor(el) + '</span><span class="list-name"' + color + '>' + (el.kind === 'channel' && el.type !== 'voz' ? '#' : '') + esc(el.name) + '</span>' +
+    pill(st) + '</button>';
+}
+
+function channelsListHtml() {
+  let h = '';
+  MAP.categories.forEach((c) => {
+    h += '<div class="list-cat">' + esc(c.name || 'Sin categoría') + '</div>';
+    h += c.channels.map((ch) => stateRow(ch.id)).join('');
+  });
+  return '<div class="list">' + h + '</div>';
+}
+
+function membersListHtml() {
+  return '<div class="list"><div class="list-cat">Roles — ' + MAP.roles.length + '</div>' + MAP.roles.map((r) => stateRow(r.id)).join('') +
+    '<div class="list-cat">Bots — ' + MAP.bots.length + '</div>' + MAP.bots.map((b) => stateRow(b.id)).join('') + '</div>';
+}
+
+function tasksBlock(ids, intro) {
+  const rows = (ids || []).filter((id) => TASKS[id]);
+  if (!rows.length) return '';
+  return '<div class="date-sep">Tareas del manual</div>' +
+    msg('<div class="msg-text">' + (intro || 'Se marcan igual que en el manual clásico.') + '</div><div class="tasks">' + rows.map(taskRow).join('') + '</div>');
+}
+
+function taskTotals() {
+  const t = { done: 0, skip: 0, todo: 0 };
+  Object.keys(TASKS).forEach((id) => { t[taskStatus(id)]++; });
+  return t;
+}
+
+let openLevels = new Set();
+
+function resumenHtml() {
+  const t = taskTotals();
+  const total = t.done + t.skip + t.todo;
+  const pct = total ? Math.round(((t.done + t.skip) / total) * 100) : 0;
+  const e = { delete: [], pending: [], done: [], deleted: [] };
+  ORDER.forEach((id) => { e[stateOf(id)].push(id); });
+
+  let h = '<div class="sum-cards">' +
+    '<div class="sum-card c-done"><b>' + t.done + '</b><span>Hechas</span></div>' +
+    '<div class="sum-card c-skip"><b>' + t.skip + '</b><span>Descartadas</span></div>' +
+    '<div class="sum-card c-todo"><b>' + t.todo + '</b><span>Pendientes</span></div>' +
+    '<div class="sum-card c-pct"><b>' + pct + '%</b><span>Avance</span></div></div>' +
+    '<div class="bar"><i style="width:' + pct + '%"></i></div>';
+
+  h += '<div class="actions sum-actions">' +
+    '<button type="button" class="btn btn-brand" data-do="copy">' + ICONS.copy + 'Copiar resumen</button>' +
+    '<button type="button" class="btn" data-do="export">' + ICONS.download + 'Exportar progreso</button>' +
+    '<button type="button" class="btn" data-do="import">' + ICONS.upload + 'Importar progreso</button>' +
+    '<button type="button" class="btn btn-link" data-do="reset">Reiniciar tareas</button>' +
+    '<button type="button" class="btn btn-link" data-do="reset-el">Reiniciar estados de canales</button></div>';
+
+  let out = '<section class="welcome resumen">' + h + '</section>';
+
+  out += '<div class="date-sep">Canales, roles y bots</div>';
+  let eh = '<div class="msg-text">' + e.done.length + ' listos · ' + e.pending.length + ' pendientes · ' + e.delete.length + ' por borrar · ' + e.deleted.length + ' borrados.</div>';
+  STATE_ORDER.forEach((st) => {
+    if (!e[st].length) return;
+    eh += '<div class="sum-el"><span class="sum-el-h">' + pill(st) + '</span><span class="sum-el-items">' +
+      e[st].map((id) => '<button type="button" class="linkbtn chip-el st-' + st + '" data-el="' + id + '">' +
+        (EL[id].kind === 'channel' && EL[id].type !== 'voz' ? '#' : EL[id].kind === 'role' ? '@' : '') + esc(EL[id].name) + '</button>').join('') + '</span></div>';
+  });
+  out += msg(eh);
+
+  out += '<div class="date-sep">Tareas por nivel</div>';
+  let lh = '<div class="msg-text">Toca un nivel para ver y marcar sus tareas.</div>';
+  LEVELS.forEach((l, i) => {
+    const ids = l.steps.map((s) => s.id);
+    const done = ids.filter((id) => taskStatus(id) !== 'todo').length;
+    const full = done === ids.length;
+    lh += '<details class="sum-level' + (full ? ' is-full' : '') + '" data-lvl="' + i + '"' + (openLevels.has(i) ? ' open' : '') + '>' +
+      '<summary><span class="sum-num">' + pad(i + 1) + '</span><span class="sum-title">' + fmt(l.title) + '</span>' +
+      '<span class="sum-count">' + done + '/' + ids.length + '</span><span class="bar small"><i style="width:' + Math.round(done / ids.length * 100) + '%"></i></span></summary>' +
+      '<div class="tasks">' + ids.map(taskRow).join('') + '</div></details>';
+  });
+  out += msg(lh);
+  return out;
+}
+
+function resumenPlain() {
+  const t = taskTotals();
+  let s = 'RESUMEN DE AVANCE · ' + serverName() + '\nHechas: ' + t.done + ' · Descartadas: ' + t.skip + ' · Pendientes: ' + t.todo + '\n';
+  const e = { delete: [], pending: [], done: [], deleted: [] };
+  ORDER.forEach((id) => { e[stateOf(id)].push(EL[id].name); });
+  s += '\nCanales, roles y bots\n';
+  STATE_ORDER.forEach((st) => { if (e[st].length) s += '  ' + STATE_LABEL[st] + ': ' + e[st].join(', ') + '\n'; });
+  LEVELS.forEach((l, i) => {
+    s += '\n' + pad(i + 1) + ' · ' + sub(l.title) + '\n';
+    l.steps.forEach((x) => {
+      const st = taskStatus(x.id);
+      s += '  ' + (st === 'done' ? '✔' : st === 'skip' ? '✕' : '·') + ' ' + sub(x.t).replace(/\*\*|`/g, '') + (st === 'skip' ? ' (descartado)' : '') + '\n';
+    });
+  });
+  return s;
+}
+
+function renderPage(el) {
+  $('#topIcon').innerHTML = ICONS[el.icon] || '';
+  $('#topName').textContent = el.name;
+  $('#topState').innerHTML = '';
+  $('#topTopic').innerHTML = fmt(el.topic || '');
+
+  let h;
+  if (el.id === 'p-resumen') {
+    h = '<section class="welcome"><div class="welcome-icon">' + ICONS.chart.replace(/width="20" height="20"/, 'width="40" height="40"') + '</div>' +
+      '<h2>Resumen de avance</h2><p>' + esc(serverName()) + ' · Se arma solo con lo que marquen aquí o en el manual clásico.</p></section>' + resumenHtml();
+  } else {
+    h = '<section class="welcome"><div class="welcome-icon">' + (ICONS[el.icon] || '').replace(/width="20" height="20"/, 'width="40" height="40"') + '</div>' +
+      '<h2>' + esc(el.name) + '</h2><p>' + fmt(el.topic || '') + '</p></section>';
+    if (el.intro) h += msg('<div class="msg-text">' + fmt(el.intro) + '</div>');
+    if (el.body) {
+      h += '<div class="date-sep">Guía</div>';
+      el.body.forEach((s, i) => { h += msg(stepEmbed(s, i + 1)); });
+    }
+    if (el.roles) {
+      h += msg('<div class="msg-text">Roles relacionados: ' + el.roles.filter((id) => EL[id]).map((id) =>
+        '<button type="button" class="linkbtn" data-el="' + id + '" style="color:' + EL[id].color + '">@' + esc(EL[id].name) + '</button>').join(', ') + '.</div>');
+    }
+    if (el.list === 'channels') h += '<div class="date-sep">Canales</div>' + msg(channelsListHtml());
+    if (el.list === 'members') h += '<div class="date-sep">Roles y bots</div>' + msg(membersListHtml());
+    h += tasksBlock(el.tasks);
+  }
+  $('#chatInner').innerHTML = h;
+  $('#composer').textContent = el.id === 'p-resumen'
+    ? 'Exporta el progreso de vez en cuando: con el archivo lo recuperas en otra PC o navegador.'
+    : 'Página de consulta. Toca un canal, rol o bot para ir a sus pasos.';
+}
+
+document.addEventListener('toggle', (e) => {
+  const d = e.target;
+  if (!d.matches || !d.matches('details[data-lvl]')) return;
+  const i = Number(d.dataset.lvl);
+  if (d.open) openLevels.add(i); else openLevels.delete(i);
+}, true);
+
+/* ---------- avisos, copiar, exportar e importar ---------- */
+let toastTimer = null;
+function toast(text) {
+  const t = $('#toast');
+  if (!t) return;
+  t.textContent = text;
+  t.classList.add('on');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('on'), 4500);
+}
+
+async function copyPlain(text) {
+  try {
+    await navigator.clipboard.writeText(text);
+    return true;
+  } catch (e) {
+    // Respaldo para cuando se abre como archivo local y el navegador no deja usar el portapapeles moderno
+    const ta = document.createElement('textarea');
+    ta.value = text; ta.setAttribute('readonly', ''); ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    let ok = false;
+    try { ok = document.execCommand('copy'); } catch (err) { ok = false; }
+    ta.remove();
+    return ok;
+  }
+}
+
+function exportProgress() {
+  const data = {
+    app: 'manual-dasodi', version: 3, exportado: new Date().toISOString(),
+    server: store.get('server', ''), progress: store.get('progress-v3', {}) || {}, elements: store.get('elements-v1', {}) || {}
+  };
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'progreso-manual-' + new Date().toISOString().slice(0, 10) + '.json';
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  toast('Progreso exportado (tareas y estados de canales). Guarda el archivo.');
+}
+
+const VALID_EL_STATES = ['pending', 'delete', 'done', 'deleted'];
+function importData(data) {
+  if (!data || data.app !== 'manual-dasodi' || !data.progress || typeof data.progress !== 'object') throw new Error('formato');
+  const valid = {};
+  Object.keys(data.progress).forEach((id) => { if (data.progress[id] === 'done' || data.progress[id] === 'skip') valid[id] = data.progress[id]; });
+  let validEl = null;
+  if (data.elements && typeof data.elements === 'object') {
+    validEl = {};
+    Object.keys(data.elements).forEach((id) => { if (EL[id] && EL[id].kind !== 'page' && VALID_EL_STATES.indexOf(data.elements[id]) >= 0) validEl[id] = data.elements[id]; });
+  }
+  const msgTxt = 'Esto reemplaza el progreso actual por el del archivo (' + Object.keys(valid).length + ' tareas' +
+    (validEl ? ' y ' + Object.keys(validEl).length + ' estados de canales' : '') + '). ¿Continuar?';
+  if (!confirm(msgTxt)) return false;
+  progress = valid; store.set('progress-v3', progress);
+  if (validEl) { elState = validEl; store.set('elements-v1', elState); }
+  if (typeof data.server === 'string') store.set('server', data.server);
+  renderAll();
+  const nv = Object.keys(valid).length;
+  toast('Progreso importado: ' + nv + (nv === 1 ? ' tarea' : ' tareas') + (validEl ? '' : ' (el archivo no traía estados de canales; esos se quedaron igual)') + '.');
+  return true;
+}
+
+function resetTasks() {
+  if (!confirm('¿Borrar todas las palomitas y descartes? Exporta antes si quieres conservarlos.')) return;
+  progress = {}; store.set('progress-v3', progress);
+  renderAll(); toast('Tareas reiniciadas.');
+}
+
+function resetElements() {
+  if (!confirm('¿Regresar todos los canales, roles y bots a su estado inicial (pendiente o por borrar)?')) return;
+  elState = {}; store.set('elements-v1', elState);
+  renderAll(); toast('Estados de canales reiniciados.');
+}
+
+function renameServer() {
+  const now = store.get('server', '') || '';
+  const v = prompt('Nombre del servidor (se usa en todo el manual):', now);
+  if (v === null) return;
+  store.set('server', v.trim());
+  renderAll();
+  toast('Nombre guardado.');
+}
+
+async function doAction(what) {
+  if (what === 'copy') { const ok = await copyPlain(resumenPlain()); toast(ok ? 'Resumen copiado como texto.' : 'No se pudo copiar: tu navegador lo bloqueó.'); }
+  else if (what === 'export') exportProgress();
+  else if (what === 'import') $('#importFile').click();
+  else if (what === 'reset') resetTasks();
+  else if (what === 'reset-el') resetElements();
+  else if (what === 'rename') renameServer();
+}
+
+/* ---------- menú del server (flecha junto al nombre) ---------- */
+const MENU = [
+  { id: 'p-mejoras', label: 'Mejoras del servidor', icon: 'boost', cls: 'boost' },
+  'sep',
+  { id: 'settings', label: 'Ajustes del servidor', icon: 'gear' },
+  { id: 'p-resumen', label: 'Resumen de avance', icon: 'chart' },
+  { id: 'rename', label: 'Cambiar nombre del servidor', icon: 'pencil' },
+  'sep',
+  { id: 'export', label: 'Exportar progreso', icon: 'download' },
+  { id: 'import', label: 'Importar progreso', icon: 'upload' },
+  'sep',
+  { id: 'classic', label: 'Manual clásico', icon: 'book', href: '../index.html' }
+];
+
+function menuOpen() { return !$('#guildMenu').hidden; }
+function openMenu() {
+  $('#guildMenu').innerHTML = MENU.map((m) => m === 'sep' ? '<div class="menu-sep" role="separator"></div>'
+    : m.href ? '<a class="menu-item" role="menuitem" href="' + m.href + '">' + esc(m.label) + '<span>' + ICONS[m.icon] + '</span></a>'
+    : '<button type="button" class="menu-item' + (m.cls ? ' ' + m.cls : '') + '" role="menuitem" data-menu="' + m.id + '">' + esc(m.label) + '<span>' + ICONS[m.icon].replace(/width="\d+" height="\d+"/, 'width="18" height="18"') + '</span></button>').join('');
+  $('#guildMenu').hidden = false;
+  $('#guildBtn').setAttribute('aria-expanded', 'true');
+  const first = $('#guildMenu .menu-item');
+  if (first) first.focus();
+}
+function closeMenu(focusBtn) {
+  if (!menuOpen()) return;
+  $('#guildMenu').hidden = true;
+  $('#guildBtn').setAttribute('aria-expanded', 'false');
+  if (focusBtn) $('#guildBtn').focus();
+}
+
+/* ---------- ventana «Ajustes del servidor» ---------- */
+const SEC = {};
+let FIRST_SEC = null;
+SETTINGS.forEach((g) => g.items.forEach((it) => { SEC[it.id] = it; if (!FIRST_SEC) FIRST_SEC = it.id; }));
+const MAPA_INDEX = window.MANUAL.extras.findIndex((x) => x.title === (window.SERVER_PAGES && window.SERVER_PAGES.mapaTitle));
+const MAPA = {};
+if (MAPA_INDEX >= 0) window.MANUAL.extras[MAPA_INDEX].items.forEach((it) => { MAPA[it.q] = it.a; });
+const secText = (it) => it.a || MAPA[it.mapa] || '';
+const pendingIn = (it) => (it.tasks || []).filter((id) => TASKS[id] && taskStatus(id) === 'todo').length;
+
+function openSettings(sec) {
+  lastFocus = document.activeElement;
+  modalState = { kind: 'settings', sec: SEC[sec] ? sec : FIRST_SEC, body: !!SEC[sec] };
+  renderModal();
+  $('#modal').hidden = false;
+  document.body.classList.add('modal-open');
+  setTimeout(() => { const c = $('#modal .set-close'); if (c) c.focus(); }, 30);
+}
+
+function renderSettings() {
+  const it = SEC[modalState.sec];
+  let nav = '<div class="set-head">' + esc(serverName()) + '</div>';
+  SETTINGS.forEach((g, gi) => {
+    if (gi > 0) nav += '<div class="set-sep"></div>';
+    if (g.group) nav += '<div class="set-head">' + esc(g.group) + '</div>';
+    g.items.forEach((x) => {
+      const n = pendingIn(x);
+      const all = (x.tasks || []).length > 0 && n === 0;
+      nav += '<button type="button" class="set-tab' + (g.danger ? ' danger' : '') + (x.id === modalState.sec ? ' on' : '') + '" data-sec="' + x.id + '">' +
+        '<span>' + esc(x.label) + '</span>' + (n ? '<i class="set-count" title="Tareas pendientes">' + n + '</i>' : all ? '<i class="set-ok" title="Tareas hechas">' + ICONS.check + '</i>' : '') + '</button>';
+    });
+  });
+
+  let body = '<button type="button" class="set-back" data-back>' + ICONS.back + 'Ajustes</button>';
+  body += '<h2>' + esc(it.label) + '</h2>';
+  body += '<div class="set-text">' + fmt(secText(it)) + '</div>';
+  if (it.list === 'roles') body += '<div class="perm-sec">Roles del mapa</div><div class="list">' + MAP.roles.map((r) => stateRow(r.id)).join('') + '</div>';
+  if (it.list === 'bots') body += '<div class="perm-sec">Bots del mapa</div><div class="list">' + MAP.bots.map((b) => stateRow(b.id)).join('') + '</div>';
+  const tk = (it.tasks || []).filter((id) => TASKS[id]);
+  if (tk.length) body += '<div class="perm-sec">Tareas del manual en esta sección</div><div class="tasks">' + tk.map(taskRow).join('') + '</div>';
+  else body += '<div class="set-note">Esta sección no tiene tareas en el manual: es de consulta.</div>';
+  body += '<div class="actions" style="margin-top:16px">';
+  if (it.page && EL[it.page]) body += '<button type="button" class="btn btn-brand" data-el="' + it.page + '">Abrir «' + esc(EL[it.page].name) + '»</button>';
+  if (MAPA_INDEX >= 0) body += '<a class="btn" href="../index.html#extra-' + (MAPA_INDEX + 1) + '">' + ICONS.book + 'Ver en el manual clásico</a>';
+  body += '</div>';
+
+  $('#modal').innerHTML = '<div class="settings settings-server' + (modalState.body ? ' show-body' : '') + '" role="dialog" aria-modal="true" aria-label="Ajustes del servidor">' +
+    '<nav class="set-nav">' + nav + '</nav><section class="set-body">' + body + '</section>' +
+    '<button type="button" class="set-close" aria-label="Cerrar">' + ICONS.close + '<span>ESC</span></button></div>';
+}
 
 /* ---------- eventos ---------- */
 document.addEventListener('click', (e) => {
   if (modalState) return;
+  if (e.target.closest('#guildBtn')) { snd('click'); if (menuOpen()) closeMenu(); else openMenu(); return; }
+  const mi = e.target.closest('[data-menu]');
+  if (mi) {
+    snd('click'); closeMenu();
+    const id = mi.dataset.menu;
+    if (id === 'settings') openSettings();
+    else if (EL[id]) go(id);
+    else doAction(id);
+    return;
+  }
+  if (menuOpen() && !e.target.closest('#guildMenu')) closeMenu();
+  const dob = e.target.closest('[data-do]');
+  if (dob) { snd('click'); doAction(dob.dataset.do); return; }
   const elBtn = e.target.closest('[data-el]');
   if (elBtn) { snd('click'); go(elBtn.dataset.el); return; }
 
@@ -604,7 +978,33 @@ window.addEventListener('storage', (e) => {
   progress = store.get('progress-v3', progress) || {};
   elState = store.get('elements-v1', elState) || {};
   renderAll();
+  if (modalState) renderModal();
 });
+
+$('#importFile').addEventListener('change', async (e) => {
+  const file = e.target.files[0];
+  e.target.value = '';
+  if (!file) return;
+  try { importData(JSON.parse(await file.text())); }
+  catch (err) { toast('Ese archivo no es un progreso válido del manual.'); }
+});
+
+// Celular: tocar fuera del panel abierto (canales o miembros) lo cierra sin activar lo que había debajo
+document.addEventListener('click', (e) => {
+  const app = document.querySelector('.app');
+  if (!app.classList.contains('show-channels') && !app.classList.contains('show-members')) return;
+  if (e.target.closest('.sidebar, .members, #menuBtn, #membersBtn, #modal')) return;
+  app.classList.remove('show-channels', 'show-members');
+  e.preventDefault(); e.stopPropagation();
+}, true);
+
+// Cartel: se encoge al bajar en la lista de canales, como en Discord
+$('#channels').addEventListener('scroll', () => {
+  document.querySelector('.sidebar').classList.toggle('banner-small', $('#channels').scrollTop > 8);
+}, { passive: true });
+if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+  const b = $('#bannerImg'); if (b) b.src = '../assets/megaman-idle.png';
+}
 window.addEventListener('hashchange', () => { const id = location.hash.slice(1); if (EL[id] && id !== current) go(id, false); });
 
 /* ---------- arranque ---------- */

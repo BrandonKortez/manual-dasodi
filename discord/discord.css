@@ -612,3 +612,174 @@ body.modal-open { overflow: hidden; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; }
 }
+
+/* =========================================================
+   FASE 3 — menú del server, cartel, páginas de arriba,
+   Ajustes del servidor, Resumen de avance y celular
+   ========================================================= */
+.sidebar { position: relative; }
+
+/* ---------- cabecera como botón + menú ---------- */
+button.guild-header {
+  width: 100%; border: none; border-bottom: 1px solid var(--divider);
+  background: none; cursor: pointer; text-align: left; color: var(--text-normal);
+  position: relative; z-index: 3;
+}
+button.guild-header:hover { background: var(--hover-bg); }
+.guild-chev { flex: none; transition: transform .15s; }
+.guild-header[aria-expanded="true"] .guild-chev { transform: rotate(180deg); color: var(--neon-accent); }
+
+.guild-menu {
+  position: absolute; top: 54px; left: 10px; right: 10px; z-index: 40;
+  padding: 6px 8px; border-radius: 6px;
+  background: #0d0c12; border: 1px solid rgba(41,224,209,.25);
+  box-shadow: 0 8px 24px rgba(0,0,0,.6), 0 0 14px rgba(31,124,206,.25);
+  animation: menuIn .12s ease-out;
+}
+@keyframes menuIn { from { transform: translateY(-4px); opacity: 0; } }
+.menu-item {
+  width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  padding: 7px 8px; margin: 2px 0; border: none; border-radius: 3px;
+  background: none; cursor: pointer; font-size: 14px; font-weight: 500;
+  color: var(--text-normal); text-decoration: none; text-shadow: none; text-align: left;
+}
+.menu-item span { display: grid; place-items: center; color: var(--text-muted); }
+.menu-item:hover, .menu-item:focus-visible { background: var(--neon-secondary); color: #fff; outline: none; }
+.menu-item:hover span, .menu-item:focus-visible span { color: #fff; }
+.menu-item.boost { color: #ff73fa; }
+.menu-item.boost span { color: #ff73fa; }
+.menu-sep { height: 1px; margin: 4px 4px; background: var(--divider); }
+
+/* ---------- cartel (Mega Man) ---------- */
+.guild-banner {
+  flex: none; height: 96px; overflow: hidden; position: relative;
+  display: grid; place-items: center;
+  background:
+    linear-gradient(180deg, rgba(10,10,15,0) 55%, var(--bg-panel) 100%),
+    linear-gradient(rgba(41,224,209,.08) 1px, transparent 1px) 0 0 / 16px 16px,
+    linear-gradient(90deg, rgba(41,224,209,.08) 1px, transparent 1px) 0 0 / 16px 16px,
+    radial-gradient(ellipse at 50% 40%, rgba(31,124,206,.45), rgba(10,10,15,.95) 70%);
+  border-bottom: 1px solid rgba(41,224,209,.12);
+  transition: height .2s ease;
+}
+.guild-banner img {
+  width: 216px; height: 72px; max-width: 92%; object-fit: contain;
+  image-rendering: pixelated; filter: drop-shadow(0 0 6px rgba(41,224,209,.45));
+  transition: opacity .2s ease;
+}
+.sidebar.banner-small .guild-banner { height: 0; border-bottom: none; }
+.sidebar.banner-small .guild-banner img { opacity: 0; }
+
+/* ---------- entradas de arriba ---------- */
+.top-entries { padding: 4px 0 10px; margin-bottom: 4px; border-bottom: 1px solid var(--divider); }
+.top-entry .ch-icon { color: var(--text-muted); }
+.top-entry.is-active .ch-icon { color: var(--neon-accent); }
+.top-entry[data-el="p-mejoras"] .ch-icon { color: #ff73fa; }
+
+/* ---------- listas de estado (Explorar, Miembros, Ajustes) ---------- */
+.list { display: grid; gap: 2px; margin-top: 6px; max-width: 640px; }
+.list-cat { margin: 12px 0 2px; font-size: 12px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: .02em; }
+.list-cat:first-child { margin-top: 2px; }
+.list-row {
+  display: flex; align-items: center; gap: 8px; width: 100%;
+  padding: 7px 10px; border: 1px solid transparent; border-radius: 4px;
+  background: var(--bg-elevated); cursor: pointer; text-align: left; font-size: 15px;
+}
+.list-row:hover { border-color: rgba(41,224,209,.3); }
+.list-row .ch-icon { color: var(--channel-icon); }
+.list-name { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--text-normal); }
+.list-row.st-delete .list-name { color: var(--status-dnd); text-decoration: line-through; }
+.list-row.st-pending .list-name { color: var(--status-idle); }
+.list-row.st-deleted .list-name { color: #6d6f78; text-decoration: line-through; }
+
+/* ---------- resumen ---------- */
+.resumen { padding-top: 0; }
+.sum-cards { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; max-width: 640px; }
+.sum-card { padding: 12px; border-radius: 6px; background: var(--bg-elevated); border: 1px solid var(--divider); display: flex; flex-direction: column; }
+.sum-card b { font-size: 26px; font-weight: 800; line-height: 1.1; font-family: var(--mono); }
+.sum-card span { font-size: 12px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; }
+.c-done b { color: #57d18b; text-shadow: 0 0 8px rgba(35,165,90,.6); }
+.c-skip b { color: #b5bac1; }
+.c-todo b { color: var(--status-idle); }
+.c-pct b { color: var(--neon-accent); text-shadow: 0 0 8px rgba(41,224,209,.6); }
+.bar { height: 6px; max-width: 640px; margin: 10px 0 12px; border-radius: 3px; background: #26232d; overflow: hidden; }
+.bar i { display: block; height: 100%; background: linear-gradient(90deg, var(--neon-secondary), var(--neon-accent)); box-shadow: 0 0 8px var(--neon-accent); }
+.bar.small { width: 70px; height: 4px; margin: 0; flex: none; }
+.sum-actions { margin-bottom: 4px; }
+
+.sum-el { display: grid; grid-template-columns: 120px 1fr; gap: 10px; align-items: start; margin-top: 8px; }
+.sum-el-items { display: flex; flex-wrap: wrap; gap: 4px 10px; }
+.chip-el { font-weight: 600; font-size: 14px; }
+.chip-el.st-delete { color: #ff8a8d; }
+.chip-el.st-pending { color: #f6d38f; }
+.chip-el.st-done { color: #6ee29b; }
+.chip-el.st-deleted { color: #80848e; text-decoration: line-through; }
+
+.sum-level { margin-top: 6px; max-width: 640px; border-radius: 4px; background: var(--bg-elevated); border: 1px solid var(--divider); }
+.sum-level > summary { display: flex; align-items: center; gap: 10px; padding: 8px 12px; cursor: pointer; list-style: none; }
+.sum-level > summary::-webkit-details-marker { display: none; }
+.sum-level > summary:hover { background: rgba(255,255,255,.03); }
+.sum-level[open] > summary { border-bottom: 1px solid var(--divider); }
+.sum-num { font-family: var(--mono); color: var(--neon-accent); font-size: 13px; }
+.sum-title { flex: 1; min-width: 0; font-weight: 600; font-size: 14.5px; }
+.sum-count { font-family: var(--mono); font-size: 12px; color: var(--text-muted); }
+.sum-level.is-full .sum-count { color: #57d18b; }
+.sum-level .tasks { padding: 8px; margin: 0; }
+
+/* ---------- Ajustes del servidor ---------- */
+.settings-server .set-tab { display: flex; align-items: center; justify-content: space-between; gap: 6px; width: 200px; }
+.settings-server .set-tab > span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.settings-server .set-tab.danger { color: var(--status-dnd); }
+.set-count { flex: none; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 9px; font-style: normal; font-size: 11px; font-weight: 800; display: grid; place-items: center; background: #8a6418; color: #fff; }
+.set-ok { flex: none; display: grid; place-items: center; width: 18px; height: 18px; border-radius: 50%; background: var(--status-online); color: #fff; box-shadow: 0 0 6px var(--status-online); }
+.set-ok svg { width: 11px; height: 11px; }
+.set-text { font-size: 15px; line-height: 1.55; color: var(--text-normal); margin: 8px 0 6px; max-width: 640px; }
+.set-text strong { color: #fff; }
+.set-back { display: none; }
+a.btn { text-decoration: none; text-shadow: none; color: var(--text-normal); }
+
+/* ---------- aviso flotante ---------- */
+.toast {
+  position: fixed; left: 50%; bottom: 24px; z-index: 200; transform: translate(-50%, 20px);
+  max-width: min(92vw, 520px); padding: 10px 16px; border-radius: 6px;
+  background: #0d0c12; border: 1px solid var(--neon-accent); color: var(--text-strong);
+  box-shadow: 0 0 14px rgba(41,224,209,.35); font-size: 14px;
+  opacity: 0; pointer-events: none; transition: opacity .2s, transform .2s;
+}
+.toast.on { opacity: 1; transform: translate(-50%, 0); }
+
+/* ---------- celular ---------- */
+@media (max-width: 900px) {
+  /* Ajustes del servidor: primero la lista, al tocar una sección se abre a pantalla completa */
+  .settings.settings-server { grid-template-rows: minmax(0, 1fr); }
+  .settings-server .set-nav { flex-direction: column; flex-wrap: nowrap; align-items: stretch; padding: 56px 12px 24px; gap: 0; }
+  .settings-server .set-nav > * { width: auto; }
+  .settings-server .set-tab { width: auto; padding: 10px 12px; }
+  .settings-server .set-sep { display: block; }
+  .settings-server .set-body { display: none; }
+  .settings-server.show-body .set-nav { display: none; }
+  .settings-server.show-body .set-body { display: block; padding-top: 56px; }
+  .set-back {
+    display: inline-flex; align-items: center; gap: 4px; margin: 0 0 12px -6px; padding: 6px;
+    border: none; background: none; cursor: pointer; color: var(--neon-accent); font-weight: 700; font-size: 15px;
+  }
+  .settings .set-close { position: fixed; z-index: 5; }
+}
+@media (max-width: 760px) {
+  .sidebar { width: min(86vw, 300px); }
+  .guild-banner { height: 84px; }
+  .sum-cards { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .sum-el { grid-template-columns: 1fr; gap: 4px; }
+  .chat-inner { padding-bottom: 16px; }
+  .msg { padding-left: 12px; padding-right: 12px; }
+  .ch, .list-row, .set-tab, .menu-item { min-height: 40px; }
+  .task-check { width: 28px; height: 28px; }
+  .msg { gap: 10px; }
+  .msg-avatar { width: 32px; height: 32px; }
+  .composer { padding: 0 10px 12px; }
+  .toast { bottom: 84px; }
+}
+@media (max-width: 760px) and (prefers-reduced-motion: no-preference) {
+  .app.show-channels .sidebar, .app.show-members .members { animation: drawerIn .18s ease-out; }
+}
+@keyframes drawerIn { from { transform: translateX(-12px); opacity: .6; } }

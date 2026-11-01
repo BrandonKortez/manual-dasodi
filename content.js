@@ -184,10 +184,9 @@ window.MANUAL = {
           ['Comunidad', '#clips', 'Foro', 'Una etiqueta por juego'],
           ['Comunidad', '#memes', 'Texto', 'Abierto'],
           ['En vivo', '#chat-en-vivo', 'Texto', 'Modo lento de 10 s'],
-          ['En vivo', 'Sala de espera', 'Voz', 'Abierto'],
           ['En vivo', 'En vivo con (nombre)', 'Voz', 'Visible, pero nadie entra solo'],
           ['Voz', 'Charla 1, Charla 2', 'Voz', 'Abiertos'],
-          ['Voz', 'Música', 'Voz', 'Abierto; ahí suele estar el bot de música'],
+          ['Voz', 'musica/play+cancion', 'Voz', 'Todos entran sin micrófono a pedir canción con /play; solo el equipo habla y controla la música'],
           ['Staff', '#mods-avisos, #logs, #pruebas-bot', 'Texto', 'Privados: solo Administradores']
         ]
       },
@@ -213,7 +212,7 @@ window.MANUAL = {
           where: 'Editar canal «En vivo con (nombre)» › **Permisos**.',
           what: '@everyone: **Ver canal** en verde y **Conectar** en rojo. Agrega **Streamer** y **Administradores** con **Conectar**, **Hablar** y **Mover miembros** en verde.',
           check: 'Una cuenta normal ve el canal pero no puede entrar.',
-          warn: 'Para meter a alguien: arrastra su nombre desde Sala de espera al canal en vivo, o clic derecho en su nombre › **Mover a**. Para sacarlo: clic derecho › **Desconectar**.' },
+          warn: 'Para meter a alguien: la persona entra a **cualquier** canal de voz abierto (por ejemplo Charla 1) y desde ahí arrastras su nombre al canal en vivo, o clic derecho en su nombre › **Mover a**. Para sacarlo: clic derecho › **Desconectar**. Quien mueve necesita **Mover miembros**; la persona movida no necesita Conectar.' },
         { id: 'canales-6', t: 'Modo lento en #chat-en-vivo',
           where: 'Editar canal › **Información general** › **Modo lento**.',
           what: 'Ponlo en **10 segundos**.',
@@ -227,11 +226,20 @@ window.MANUAL = {
           where: 'Editar canal #clips › **Vista general** › sección **Etiquetas** › **Añadir etiqueta**.',
           what: 'Crea una etiqueta por juego, con su nombre y un emoji (las mismas que sus roles). Para sumar un juego después, agrega su etiqueta aquí.',
           check: 'Al crear una publicación en #clips aparecen las etiquetas para elegir.',
-          warn: '#clips debe ser {T:Foro}: los canales de {T:Texto} no tienen etiquetas y no se pueden convertir. Si lo creaste como texto, crea un foro nuevo y borra el viejo, o renómbralo a `clips-viejo` si quieres conservar sus mensajes (no se pasan al foro).' }
+          warn: '#clips debe ser {T:Foro}: los canales de {T:Texto} no tienen etiquetas y no se pueden convertir. Si lo creaste como texto, crea un foro nuevo y borra el viejo, o renómbralo a `clips-viejo` si quieres conservar sus mensajes (no se pasan al foro).' },
+        { id: 'canales-9', t: 'Canal de música sin micrófono',
+          where: 'Editar canal **musica/play+cancion** › **Permisos**.',
+          what: '1) **@everyone**: **Conectar**, **Enviar mensajes** y **Utilizar comandos de aplicación** en verde; **Hablar**, **Vídeo**, **Usar el panel de sonidos**, **Usar sonidos externos** y **Usar actividades** en rojo.\n2) Agrega **Streamer** y **Administradores** con **Conectar** y **Hablar** en verde.\n3) Agrega el rol de **Jockie Music** y el de **Jockie Music (1)** con **Conectar** y **Hablar** en verde.',
+          check: 'Con una cuenta normal entras sin poder activar el micrófono, escribes `/play` en el chat del canal de voz y la canción suena.',
+          warn: 'Si a Jockie no le das **Hablar** aquí, hereda el rojo de @everyone y entra al canal **sin sonar**. Quién puede saltar o parar canciones no se decide aquí: es el paso **Permisos de comandos de Jockie** del nivel Bots de apoyo.' },
+        { id: 'canales-10', t: 'Quita la Sala de espera',
+          where: 'Clic derecho en el canal de voz **Sala de espera** › **Eliminar canal**.',
+          what: 'Sobra: Discord deja mover a alguien al canal en vivo desde **cualquier** canal de voz donde ya esté conectado. Si no la creaste, marca esta tarea como descartada.',
+          check: 'En la categoría En vivo solo quedan #chat-en-vivo y el canal en vivo.' }
       ],
       tips: [
         '«Sincronizado» significa que el canal copia los permisos de su categoría. Si cambias algo solo en un canal, deja de estar sincronizado: es normal.',
-        'Sala de espera + canal en vivo es la forma más limpia de controlar quién habla en el stream sin andar dando y quitando roles.'
+        'Un canal en vivo cerrado + mover gente desde cualquier canal de voz es la forma más limpia de controlar quién habla en el stream sin andar dando y quitando roles.'
       ]
     },
 
@@ -291,10 +299,11 @@ window.MANUAL = {
         ]
       },
       steps: [
-        { id: 'bienvenida-1', t: 'Activa el mensaje nativo de Discord',
-          where: 'Ajustes del servidor › **Información general** › **Canal de mensajes del sistema**.',
-          what: 'Elige **#bienvenida** y enciende **Enviar un mensaje de bienvenida aleatorio cuando alguien se une**.',
-          check: 'Al entrar alguien aparece una línea tipo «¡Miren quién llegó!» con flecha verde. Esa línea es de Discord, no del bot.' },
+        { id: 'bienvenida-1', t: 'Decide sobre el mensaje nativo de Discord',
+          where: 'Ajustes del servidor › **Interacción** › **Canal de mensajes del sistema**.',
+          what: 'El mensaje nativo es la línea tipo «¡Miren quién llegó!» con flecha verde. Lo publica Discord y **se salta los permisos del canal**. Elige una:\n• **Solo la tarjeta de Koya** (recomendado si #bienvenida es solo de Koya): apaga **Enviar un mensaje de bienvenida aleatorio cuando alguien se une**.\n• **Las dos cosas**: elige **#bienvenida** y déjalo encendido; sale la línea y debajo la tarjeta.',
+          check: 'Al entrar alguien sale justo lo que decidieron.',
+          warn: 'El mismo canal de mensajes del sistema recibe otros avisos de Discord (por ejemplo, cuando alguien mejora el server). Si eligen solo la tarjeta y no quieren ningún aviso de Discord ahí, apaga también esas casillas o elige otro canal.' },
         { id: 'bienvenida-2', t: 'Elige e invita UN bot (Koya recomendado)',
           where: '**koya.gg** › **Add to Discord**. También desde Discord: Ajustes del servidor › **Directorio de apps** › busca «Koya» › **Agregar app**. (ProBot: probot.io › **Add to Discord**, mismos permisos.)',
           what: '1) Inicia sesión con tu cuenta de Discord si lo pide.\n2) En **Agregar al servidor**, elige **{S}** y toca **Continuar**.\n3) En la pantalla de permisos deja marcados **solo**: **Ver canales**, **Enviar mensajes**, **Insertar enlaces**, **Adjuntar archivos** (la tarjeta es una imagen), **Leer el historial de mensajes** y **Utilizar comandos de aplicación**.\n4) **Desmarca todo lo demás**, sobre todo **Administrador**, **Gestionar servidor**, **Gestionar roles**, **Gestionar canales**, **Banear**, **Expulsar** y **Mencionar a @everyone, @here y a todos los roles**.\n5) Toca **Autorizar** y completa la verificación si aparece. Te manda a su panel web.',
@@ -304,9 +313,18 @@ window.MANUAL = {
           where: 'Editar canal #bienvenida › **Permisos** › agrega el rol del bot.',
           what: '**Ver canal**, **Enviar mensajes** y **Adjuntar archivos** en verde.',
           check: 'El rol del bot aparece en la lista de permisos del canal.' },
+        { id: 'bienvenida-7', t: 'Que solo Koya escriba en #bienvenida',
+          where: 'Editar canal #bienvenida › **Permisos**.',
+          what: '1) **@everyone**: en rojo **Enviar mensajes**, **Enviar mensajes en hilos**, **Crear hilos públicos** y **Crear hilos privados**.\n2) **Koya**: en verde **Ver canal**, **Enviar mensajes**, **Adjuntar archivos** e **Insertar enlaces** (negar Enviar mensajes a @everyone también le quita adjuntar e insertar enlaces, por eso se le dan aparte).\n3) Si **Administradores** o **Streamer** aparecen en la lista con algo en verde, quítalo. Solo deben quedar @everyone y Koya.',
+          check: 'Ni una cuenta normal ni una con rol Administradores puede escribir ni abrir hilos; la tarjeta de Koya sí sale.',
+          warn: 'El owner siempre puede escribir en cualquier canal: Discord no deja bloquearlo. Eso no es un error de permisos.' },
+        { id: 'koya-ajustes', t: 'Si elegiste Koya: ajustes generales',
+          where: 'Panel de Koya › ajustes del servidor (idioma, zona horaria y quién administra el bot).',
+          what: 'Idioma **Español**; zona horaria **America/Monterrey** (o la del owner); como gestores del bot, el rol **Administradores**, para que el equipo pueda cambiar la tarjeta sin ser owner.',
+          check: 'Las respuestas de Koya salen en español y un Administrador puede entrar al panel del server.' },
         { id: 'bienvenida-4', t: 'Si elegiste Koya: configura la tarjeta',
           where: 'Panel de Koya › **Welcome**.',
-          what: 'Canal **#bienvenida**, activa la **tarjeta de bienvenida** con diseño **Classic**. Fondo: una imagen oscura del tono de Discord o con la estética del canal. Título `BIENVENID@`; debajo, la variable del nombre de usuario que ofrece el panel; subtítulo `AL SERVIDOR {S}`. Fuente gruesa.',
+          what: 'Canal **#bienvenida**, activa la **tarjeta de bienvenida** con diseño **Classic**. Fondo: una imagen oscura del tono de Discord o con la estética del canal. Título `BIENVENID@`; debajo, la variable del nombre de usuario que ofrece el panel; subtítulo `AL SERVIDOR {S}`. Fuente gruesa. Mensaje **sin embed** y la tarjeta en posición **Adjunto**, para que se vea como imagen suelta y no dentro de un recuadro.',
           check: 'La vista previa del panel muestra la tarjeta con la foto, BIENVENID@ y el nombre.',
           copy: 'AL SERVIDOR {S}' },
         { id: 'bienvenida-5', t: 'Si elegiste ProBot: configura la tarjeta',
@@ -393,7 +411,7 @@ window.MANUAL = {
         rows: [
           ['Koya o ProBot', 'Tarjeta de bienvenida', 'Ver canal, Enviar mensajes y Adjuntar archivos en #bienvenida', 'Su panel web'],
           ['Carl-bot', 'Registros de moderación', 'Ver canales, Ver registro de auditoría, Enviar mensajes en #logs', 'carl.gg'],
-          ['Jockie Music', 'Música en voz', 'Conectar y Hablar en canales de voz', 'Comandos `/` en el chat'],
+          ['Jockie Music y Jockie Music (1)', 'Música en voz', 'Conectar y Hablar en canales de voz; **sin** Administrador', 'Comandos `/` en el chat y permisos de comandos en Integraciones'],
           ['DasodiLives', 'Rol EN VIVO', 'Solo Gestionar roles, con su rol encima de EN VIVO', 'Instalador en la PC del streamer']
         ]
       },
@@ -413,10 +431,16 @@ window.MANUAL = {
           what: '1) **Default log channel**: **#logs**. Deja los demás canales en «No channel selected» para que todo caiga ahí.\n2) **Ignored channels**: **#logs** y **#pruebas-bot**.\n3) Enciende: **Deleted**, **Edited** y **Purged messages**; **Members joining** y **leaving**; en Server events, creación, cambios y borrado de **canales** y **roles**, **Server updates** y **Emoji changes**; en Member events, **Role updates**, **Name changes**, **bans**, **unbans**, **timeout** y **remove timeout**.\n4) Deja apagados **Avatar changes** y todos los **Voice events**: generan mucho ruido en un server de streams.',
           check: 'Escribe un mensaje en #general, edítalo y bórralo: en #logs aparecen dos registros (antes/después y el mensaje borrado).',
           warn: 'Si no aparece nada, el rol de carl-bot necesita **Ver canal**, **Enviar mensajes** e **Insertar enlaces** en #logs. Si #logs está en la categoría privada Staff, agrégale ese permiso al rol de carl-bot ahí.' },
-        { id: 'bots-3', t: 'Invita a Jockie Music',
-          where: 'jockiemusic.com › **Invite**.',
-          what: 'Elige {S}. Si quieren dos fiestas a la vez, invita también una segunda instancia (Jockie Music 1, 2 o 3).',
-          check: 'Jockie aparece en la lista de miembros.' },
+        { id: 'bots-3', t: 'Invita a Jockie Music (y su segunda instancia)',
+          where: '**jockiemusic.com** › **Invite** (o Ajustes del servidor › **Directorio de apps** › busca «Jockie Music»).',
+          what: '1) Elige **{S}** y toca **Continuar**.\n2) En la lista de permisos deja marcados **solo**: **Ver canales**, **Enviar mensajes**, **Insertar enlaces**, **Leer el historial de mensajes**, **Conectar**, **Hablar** y **Utilizar comandos de aplicación**.\n3) **Desmarca Administrador** y todo lo de gestionar (servidor, roles, canales, mensajes), expulsar, banear y mencionar a @everyone. Un bot de música no necesita nada de eso.\n4) Toca **Autorizar**.\n5) Repite con la segunda instancia, **Jockie Music (1)**: se invita desde su propio botón en la página de Jockie o con el comando `/invite` del primero.',
+          check: 'En la lista de miembros salen **Jockie Music** y **Jockie Music (1)**, cada uno con la etiqueta APP y sin Administrador en su rol.',
+          warn: '**Qué son las instancias:** Jockie Music, Jockie Music (1), (2) y (3) son bots separados con los mismos comandos. Cada uno toca en **un solo** canal de voz a la vez; por eso existen varios, para tener música en dos canales al mismo tiempo (gratis se pueden usar hasta cuatro). Con dos alcanza para {S}. Cada instancia tiene su propio rol y sus propios permisos de comandos: lo que configures en una, repítelo en la otra.' },
+        { id: 'bots-7', t: 'Permisos de comandos de Jockie',
+          where: 'Ajustes del servidor › **Integraciones** › **Jockie Music** › **Administrar**.',
+          what: '1) En la parte general de la app (aplica a todos sus comandos): agrega **@everyone** en rojo y **Streamer** y **Administradores** en verde.\n2) Más abajo, en la lista de comandos, abre **/play** y agrega **@everyone** en verde. El ajuste de un comando gana sobre el general, así que /play queda libre y todo lo demás (/skip, /stop, /volume…) solo para el equipo.\n3) Repite lo mismo en **Jockie Music (1)**.',
+          check: 'Con una cuenta normal, al escribir `/` solo aparece /play de Jockie; con una cuenta de Administradores aparecen todos.',
+          warn: 'Esto solo controla los comandos con `/`. Jockie también acepta comandos con prefijo (por defecto `m!`). Prueba con una cuenta normal `m!skip`: si funciona, usa `/setup` de Jockie para cambiar o limitar el prefijo y los canales donde acepta comandos.' },
         { id: 'bots-4', t: 'Prueba la música',
           where: 'Entra a un canal de voz y escribe en cualquier chat.',
           what: 'Escribe `/play` y el nombre de una canción. El bot entra al canal donde estás.',
@@ -435,6 +459,7 @@ window.MANUAL = {
       ],
       tips: [
         'Escribe `/` y elige Jockie Music para ver todos sus comandos sin memorizarlos.',
+        'Si el canal de música se queda vacío, Jockie suele salirse y la cola se pierde: durante el directo, alguien del equipo se queda conectado.',
         'Los roles por reacción de Carl-bot son opcionales: los juegos ya los cubre el Onboarding.'
       ]
     },
@@ -723,7 +748,7 @@ window.MANUAL = {
       items: [
         { q: 'Música: reproducir', a: 'Entra a un canal de voz y escribe esto con el nombre de la canción. Busca en Spotify, Deezer, Apple Music o SoundCloud (no YouTube).', copy: '/play' },
         { q: 'Música: ver todos los comandos', a: 'Escribe / y toca el icono de Jockie Music: aparece la lista completa con descripción.' },
-        { q: 'Mover a alguien al canal en vivo', a: 'Arrastra su nombre desde Sala de espera, o clic derecho en su nombre › Mover a.' },
+        { q: 'Mover a alguien al canal en vivo', a: 'La persona entra a cualquier canal de voz abierto (Charla 1, por ejemplo). Arrastra su nombre al canal en vivo, o clic derecho en su nombre › Mover a.' },
         { q: 'Aislar a alguien un rato', a: 'Clic derecho en su nombre › Aislar temporalmente › elige el tiempo.' },
         { q: 'Ver quién hizo qué', a: 'Ajustes del servidor › Registro de auditoría, o el canal #logs de Carl-bot.' }
       ]
@@ -738,7 +763,11 @@ window.MANUAL = {
         { q: 'La alerta de DasodiLives no sale', a: 'Discord debe estar abierto en la PC del streamer. Revisa %LOCALAPPDATA%\\DasodiLives\\logs\\monitor.log: si dice que el webhook es inválido, usa Reparar con uno nuevo.' },
         { q: 'TikTok no se detecta', a: 'El instalador debe haber encontrado TikTok LIVE Studio. Si lo instalaste después, corre Reparar. Si la conexión es muy lenta, el umbral de 1.2 Mbps se puede bajar en config.json (MinUploadMbps).' },
         { q: 'YouTube tarda o no se detecta', a: 'Corre Reparar con OBS cerrado para que active su conexión interna. Si se omitió ese paso, funciona en modo respaldo y es menos preciso.' },
-        { q: 'Jockie no encuentra una canción', a: 'No busca en YouTube. Prueba con el nombre exacto o pega un enlace de Spotify.' }
+        { q: 'Jockie no encuentra una canción', a: 'No busca en YouTube. Prueba con el nombre exacto o pega un enlace de Spotify.' },
+        { q: 'Jockie entra al canal de música pero no suena', a: 'Le falta **Hablar** en ese canal: @everyone lo tiene en rojo y el rol de Jockie lo hereda. Editar canal › Permisos › rol de Jockie (y de Jockie Music (1)) › **Hablar** en verde.' },
+        { q: 'Cualquiera puede saltar o parar canciones', a: 'Revisa los permisos de comandos en Ajustes del servidor › Integraciones › Jockie Music (y en Jockie Music (1)). Si con `/` ya está bloqueado pero `m!skip` sí funciona, el hueco es el prefijo: ajústalo con `/setup` de Jockie.' },
+        { q: 'TikTok LIVE Studio no capta el audio de Discord o de Jockie', a: 'Pasó que el audio solo entraba cuando se unía otra persona real al canal. Revisa en este orden: 1) En TikTok LIVE Studio, que esté agregada la fuente de **audio del sistema/escritorio** (o una captura del audio de Discord) y no solo el micrófono. 2) En Discord › Ajustes de voz y video, que el **dispositivo de salida** sea el mismo que captura TikTok. 3) En Discord, baja a 0 la **atenuación** (reduce el volumen de otras apps cuando alguien habla). 4) En Windows › Panel de sonido › pestaña **Comunicaciones**, elige **No hacer nada**. 5) Si nada funciona, en Discord › Ajustes de voz y video prueba activar el **subsistema de audio Legacy** y reinicia Discord. Cuando tengan su configuración de audio de TikTok, se ajusta este paso con sus pantallas.' },
+        { q: 'Silenciaron o limitaron el live de TikTok por la música', a: 'TikTok detecta música comercial y puede silenciar el audio o restringir el directo. Usen música sin derechos o con licencia para streams, o bajen la música mientras transmiten en TikTok.' }
       ]
     },
     {
